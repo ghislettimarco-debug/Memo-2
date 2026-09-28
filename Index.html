@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <title>Memo Corsi</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen pb-24 font-sans antialiased transition-colors duration-200">
+
+  <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-5 py-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold tracking-tight">Memo Corsi</h1>
+    <div class="flex items-center gap-2">
+      <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+        <i data-lucide="moon" class="w-5 h-5"></i>
+      </button>
+      <button onclick="requestNotificationPermission()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+        <i data-lucide="bell" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 pt-4">
+    <div class="flex bg-slate-200/70 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-1 rounded-xl mb-4 text-xs font-semibold">
+      <button onclick="switchTab('courses')" id="tab-courses" class="flex-1 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm transition">Corsi Attivi</button>
+      <button onclick="switchTab('templates')" id="tab-templates" class="flex-1 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Modelli Azioni</button>
+    </div>
+
+    <section id="view-courses" class="space-y-4">
+      <div id="course-list" class="space-y-3"></div>
+      <div id="empty-courses" class="hidden text-center py-12 px-4">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center mb-3 shadow-inner">
+          <i data-lucide="calendar-clock" class="w-6 h-6"></i>
+        </div>
+        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Nessun corso programmato</p>
+      </div>
+    </section>
+
+    <section id="view-templates" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Modelli Salvati</h2>
+        <button onclick="openTemplateModal()" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 transition">
+          <i data-lucide="plus" class="w-4 h-4"></i> Nuovo Modello
+        </button>
+      </div>
+      <div id="template-list" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent dark:from-slate-950 dark:via-slate-950/90 dark:to-transparent pointer-events-none flex justify-center">
+    <button onclick="openModal('modal-course')" class="pointer-events-auto shadow-lg shadow-indigo-600/20 flex items-center gap-2 bg-indigo-600 active:scale-95 hover:bg-indigo-500 text-white px-6 py-3.5 rounded-full font-semibold text-sm transition">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      <span>Pianifica Nuovo Corso</span>
+    </button>
+  </div>
+
+  <!-- MODAL: CREA CORSO -->
+  <div id="modal-course" class="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h3 class="text-base font-bold">Nuovo Corso</h3>
+        <button onclick="closeModal('modal-course')" class="text-slate-400 hover:text-slate-700 dark:hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="form-course" onsubmit="saveCourse(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nome del Corso</label>
+          <input type="text" id="course-name" required class="w-full text-sm px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Data e Ora</label>
+          <input type="datetime-local" id="course-datetime" required class="w-full text-sm px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Modello Azioni</label>
+          <select id="course-template-select" class="w-full text-sm px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800"></select>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm">Crea e Calcola Scadenze</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREA MODELLO -->
+  <div id="modal-template" class="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h3 id="modal-tpl-title" class="text-base font-bold">Nuovo Modello</h3>
+        <button onclick="closeModal('modal-template')" class="text-slate-400 hover:text-slate-700 dark:hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="form-template" onsubmit="saveTemplate(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nome Modello</label>
+          <input type="text" id="tpl-name" required class="w-full text-sm px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold">Attività & Anticipo</label>
+            <button type="button" onclick="addTemplateActionRow()" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">+ Riga</button>
+          </div>
+          <div id="tpl-actions-container" class="space-y-2.5"></div>
+        </div>
+        <button type="submit" id="btn-save-tpl" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm">Salva Modello</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
