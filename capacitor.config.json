@@ -1,0 +1,6 @@
+{
+  "appId": "com.memocorsi.app",
+  "appName": "Memo Corsi",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
